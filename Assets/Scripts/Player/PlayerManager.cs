@@ -1,12 +1,15 @@
-
 using UnityEngine;
 
-[RequireComponent(typeof(PlayerMovement), typeof(PlayerShoot), typeof(PlayerHealth))]
+[RequireComponent(typeof(CharacterController))]
+[RequireComponent(typeof(PlayerMovement))]
 public class PlayerManager : MonoBehaviour
 {
-    void Update()
+    private PlayerMovement playerMovement;
+    private MouseLook mouseLook;
+
+    private void Awake()
     {
-        GetComponent<PlayerMovement>().HandleMovement();
-        GetComponent<PlayerShoot>().HandleShoot();
+        playerMovement = GetComponent<PlayerMovement>();
+        mouseLook = GetComponentInChildren<MouseLook>();
     }
 }
