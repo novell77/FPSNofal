@@ -20,7 +20,7 @@ public class AudioManager : MonoBehaviour
 
     public void PlayGunShot()
     {
-        BulletSpawn.Play();
+        BulletSpawn.PlayOneShot(BulletSpawn.clip);
     }
 
     public void PlayReload()

@@ -14,7 +14,7 @@ public class PlayerShoot : MonoBehaviour
 
     public TextMeshProUGUI ammoText;
 
-    public float reloadDuration = 2f; // مدة التعشيق
+    public float reloadDuration = 2f;
     private bool isReloading = false;
 
     void Start()
@@ -27,7 +27,6 @@ public class PlayerShoot : MonoBehaviour
     {
         shootTimer += Time.deltaTime;
 
-        // ما يطلق إذا كان يعشق
         if (isReloading) return;
 
         if (Input.GetButtonDown("Fire1") && shootTimer >= shootRate)
@@ -35,10 +34,6 @@ public class PlayerShoot : MonoBehaviour
             if (currentAmmo > 0)
             {
                 Shoot();
-            }
-            else
-            {
-                Debug.Log("ما فيه رصاص!");
             }
         }
 
@@ -57,6 +52,7 @@ public class PlayerShoot : MonoBehaviour
             Instantiate(bulletEffect, shootPoint.position, shootPoint.rotation);
         }
 
+        AudioManager.instance.PlayGunShot();
         currentAmmo--;
         UpdateAmmoUI();
     }
@@ -64,15 +60,11 @@ public class PlayerShoot : MonoBehaviour
     IEnumerator Reload()
     {
         isReloading = true;
-        Debug.Log("يعشق...");
-
-        yield return new WaitForSeconds(reloadDuration); // ينتظر وقت التعشيق
-
+        AudioManager.instance.PlayReload();
+        yield return new WaitForSeconds(reloadDuration);
         currentAmmo = maxAmmo;
         UpdateAmmoUI();
-
         isReloading = false;
-        Debug.Log("انتهى التعشيق!");
     }
 
     void UpdateAmmoUI()
