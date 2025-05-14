@@ -6,45 +6,52 @@ public class ZombieAI : MonoBehaviour
     public Transform player;
     private NavMeshAgent agent;
     private Animator animator;
+    private ZombieHealth health;
 
-    public float walkRange = 10f;
-    public float runRange = 6f;
+    public float chaseRange = 10f;
     public float attackRange = 2f;
 
     void Start()
     {
         agent = GetComponent<NavMeshAgent>();
         animator = GetComponent<Animator>();
+        health = GetComponent<ZombieHealth>();
     }
 
     void Update()
     {
-        float distance = Vector3.Distance(transform.position, player.position);
-        animator.SetFloat("Distance", distance);
+        if (health != null && health.IsDead) return;
+        if (player == null) return;
 
-        if (distance > walkRange)
+        float distance = Vector3.Distance(transform.position, player.position);
+
+        if (distance > chaseRange)
         {
             agent.isStopped = true;
-            animator.Play("Z_Idle");
-        }
-        else if (distance > runRange)
-        {
-            agent.isStopped = false;
-            agent.SetDestination(player.position);
-            animator.Play("Z_Walk1_InPlace");
+            if (!animator.GetCurrentAnimatorStateInfo(0).IsName("Z_Idle"))
+            {
+                animator.Play("Z_Idle");
+            }
         }
         else if (distance > attackRange)
         {
             agent.isStopped = false;
             agent.SetDestination(player.position);
-            animator.Play("Z_Run_InPlace");
+            if (!animator.GetCurrentAnimatorStateInfo(0).IsName("Z_Run_InPlace"))
+            {
+                animator.Play("Z_Run_InPlace");
+            }
         }
         else
         {
             agent.isStopped = true;
-            animator.Play("Z_Attack");
+            if (!animator.GetCurrentAnimatorStateInfo(0).IsName("Z_Attack"))
+            {
+                animator.Play("Z_Attack");
+            }
         }
 
+        // الدوران باتجاه اللاعب
         Vector3 dir = (player.position - transform.position).normalized;
         dir.y = 0;
         if (dir != Vector3.zero)

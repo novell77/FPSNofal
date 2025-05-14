@@ -1,9 +1,10 @@
-using UnityEngine;
+﻿using UnityEngine;
+using System.Collections;
 
 public class WeaponController : MonoBehaviour
 {
-    public GameObject gun;
-    public GameObject knife;
+    public GameObject gun1;
+    public GameObject gun2;
 
     public GameObject bulletPrefab;
     public Transform bulletSpawn;
@@ -13,68 +14,81 @@ public class WeaponController : MonoBehaviour
     public float zoomFOV = 30f;
     public float zoomSpeed = 8f;
 
-    public Vector3 aimPositionOffset;
+    public Vector3 recoilAmount = new Vector3(-0.05f, 0, 0);
+    public float recoilSpeed = 10f;
+    public int maxAmmo = 20;
+    private int currentAmmo;
+    private bool isReloading = false;
 
-    public float knifeRange = 2f;
-    public int knifeDamage = 1;
-
-    private Animator weaponAnimator;
-    private AudioSource audioSource;
     private Camera cam;
     private float normalFOV;
     private Vector3 normalCamPos;
+    private Vector3 gunOriginalPos;
 
     void Start()
     {
-        weaponAnimator = GetComponentInChildren<Animator>();
-        audioSource = GetComponent<AudioSource>();
         cam = Camera.main;
         normalFOV = cam.fieldOfView;
         normalCamPos = cam.transform.localPosition;
-        EquipGun();
+        currentAmmo = maxAmmo;
+        GameUIManager.instance.UpdateAmmo(currentAmmo, maxAmmo);
+        EquipGun1();
     }
 
     void Update()
     {
-        if (Input.GetKeyDown(KeyCode.Alpha1)) EquipGun();
-        else if (Input.GetKeyDown(KeyCode.Alpha2)) EquipKnife();
+        if (Input.GetKeyDown(KeyCode.Alpha1)) EquipGun1();
+        else if (Input.GetKeyDown(KeyCode.Alpha2)) EquipGun2();
+
+        if (Input.GetKeyDown(KeyCode.R))
+        {
+            StartCoroutine(Reload());
+        }
 
         bool isAiming = Input.GetMouseButton(1);
 
         float targetFOV = isAiming ? zoomFOV : normalFOV;
         cam.fieldOfView = Mathf.Lerp(cam.fieldOfView, targetFOV, Time.deltaTime * zoomSpeed);
 
-        Vector3 targetPos = isAiming ? aimPositionOffset : normalCamPos;
+        Vector3 targetPos = isAiming && ironSight != null
+            ? cam.transform.InverseTransformPoint(ironSight.position)
+            : normalCamPos;
+
         cam.transform.localPosition = Vector3.Lerp(cam.transform.localPosition, targetPos, Time.deltaTime * zoomSpeed);
 
-        if (Input.GetMouseButtonDown(0))
+        if (Input.GetMouseButtonDown(0) && currentAmmo > 0 && !isReloading)
         {
-            if (knife.activeSelf)
-            {
-                weaponAnimator?.SetTrigger("Stab");
-                DoKnifeDamage();
-            }
-            else
-            {
-                DoGunShoot();
-            }
+            DoGunShoot();
         }
     }
 
-    void EquipGun()
+    void EquipGun1()
     {
-        gun.SetActive(true);
-        knife.SetActive(false);
+        gun1.SetActive(true);
+        gun2.SetActive(false);
+
+        Transform scope = gun1.transform.Find("Gun/Iron Sight_Low");
+        if (scope != null) ironSight = scope;
+
+        gunOriginalPos = gun1.transform.localPosition;
     }
 
-    void EquipKnife()
+    void EquipGun2()
     {
-        gun.SetActive(false);
-        knife.SetActive(true);
+        gun1.SetActive(false);
+        gun2.SetActive(true);
+
+        Transform scope = gun2.transform.Find("Gun2/Iron Sight_Low");
+        if (scope != null) ironSight = scope;
+
+        gunOriginalPos = gun2.transform.localPosition;
     }
 
     void DoGunShoot()
     {
+        currentAmmo--;
+        GameUIManager.instance.UpdateAmmo(currentAmmo, maxAmmo);
+
         if (bulletPrefab && bulletSpawn)
             Instantiate(bulletPrefab, bulletSpawn.position, bulletSpawn.rotation);
 
@@ -84,17 +98,33 @@ public class WeaponController : MonoBehaviour
             Destroy(flash, 0.1f);
         }
 
-        audioSource?.Play();
+        AudioManager.instance.PlayGunShot();
+
+        GameObject activeGun = gun1.activeSelf ? gun1 : gun2;
+        StopAllCoroutines();
+        StartCoroutine(DoRecoil(activeGun.transform));
     }
 
-    void DoKnifeDamage()
+    IEnumerator DoRecoil(Transform gun)
     {
-        if (Physics.Raycast(bulletSpawn.position, bulletSpawn.forward, out RaycastHit hit, knifeRange))
+        gun.localPosition += recoilAmount;
+        yield return null;
+
+        while (Vector3.Distance(gun.localPosition, gunOriginalPos) > 0.01f)
         {
-            if (hit.collider.TryGetComponent<ZombieHealth>(out var zombieHealth))
-            {
-                zombieHealth.TakeDamage(knifeDamage);
-            }
+            gun.localPosition = Vector3.Lerp(gun.localPosition, gunOriginalPos, Time.deltaTime * recoilSpeed);
+            yield return null;
         }
+    }
+
+    IEnumerator Reload()
+    {
+        if (isReloading) yield break;
+        isReloading = true;
+        AudioManager.instance.PlayReload();
+        yield return new WaitForSeconds(4f);
+        currentAmmo = maxAmmo;
+        GameUIManager.instance.UpdateAmmo(currentAmmo, maxAmmo);
+        isReloading = false;
     }
 }
