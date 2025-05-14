@@ -52,6 +52,9 @@ public class ZombieHealth : MonoBehaviour
         }
 
         animator.Play("Z_Death");
+
+        KillCounter.instance.AddKill();
+        ZombieSpawner.instance.SpawnNewZombie();
     }
 
     void ShowBloodEffect()
