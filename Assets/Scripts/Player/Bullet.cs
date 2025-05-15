@@ -2,43 +2,38 @@
 
 public class Bullet : MonoBehaviour
 {
-    public int damage = 10;
+    public int damage = 1;
     public float speed = 60f;
-    public float lifetime = 10f;
+    public float lifetime = 5f;
 
-    private Rigidbody rb;
-    private bool hasHit = false;
+    Rigidbody rb;
+    bool hasHit;
 
-    [System.Obsolete]
-    void Start()
+    void Awake()
     {
         rb = GetComponent<Rigidbody>();
-        rb.useGravity = false;
-        rb.velocity = transform.forward * speed;
-        rb.constraints = RigidbodyConstraints.FreezeRotation;
+        hasHit = false;
+    }
 
+    void Start()
+    {
+        rb.useGravity = false;
+        rb.constraints = RigidbodyConstraints.FreezeRotation;
+        rb.linearVelocity = transform.forward * speed;
         Destroy(gameObject, lifetime);
     }
 
-    [System.Obsolete]
     void OnCollisionEnter(Collision collision)
     {
-        if (hasHit) return; // تمنع التكرار
+        if (hasHit) return;
         hasHit = true;
 
-        // إذا صدم زومبي يخصم له
-        if (collision.collider.TryGetComponent<ZombieHealth>(out var zombie))
+        var zh = collision.collider.GetComponent<ZombieHealth>();
+        if (zh != null)
         {
-            zombie.TakeDamage(damage);
+            zh.TakeDamage(damage);
         }
 
-        // توقيف الحركة الأمامية وتفعيل الجاذبية
-        rb.velocity = Vector3.zero;
-        rb.useGravity = true;
-
-        // تفعيل الاحتكاك والفيزياء الطبيعية
-        rb.constraints = RigidbodyConstraints.FreezeRotationX | RigidbodyConstraints.FreezeRotationZ;
-
-        // تبقى في العالم وما تختفي
+        Destroy(gameObject);
     }
 }

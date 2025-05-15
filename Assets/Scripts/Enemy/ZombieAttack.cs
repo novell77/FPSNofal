@@ -2,25 +2,22 @@
 
 public class ZombieAttack : MonoBehaviour
 {
-    public int damageAmount = 1;
-    private bool hasAttacked = false;
+    [Header("Attack Settings")]
+    public int damageAmount = 1;      // كم يخصم من الصحة
+    public float attackCooldown = 1f; // ثواني بين كل ضربة
+    private float nextAttackTime = 0f;
 
-    private void OnTriggerEnter(Collider other)
+    // هذا يُستدعى كل فريم طالما اللاعب داخل التريغر
+    void OnTriggerStay(Collider other)
     {
-        if (other.CompareTag("Player") && !hasAttacked)
+        if (other.CompareTag("Player") && Time.time >= nextAttackTime)
         {
-            PlayerHealth playerHealth = other.GetComponent<PlayerHealth>();
-            if (playerHealth != null)
+            var ph = other.GetComponent<PlayerHealth>();
+            if (ph != null)
             {
-                playerHealth.TakeDamage(damageAmount);
-                hasAttacked = true;
-                Invoke("ResetAttack", 1f);
+                ph.TakeDamage(damageAmount);
+                nextAttackTime = Time.time + attackCooldown;
             }
         }
-    }
-
-    private void ResetAttack()
-    {
-        hasAttacked = false;
     }
 }
