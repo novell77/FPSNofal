@@ -2,17 +2,17 @@
 
 public class Bullet : MonoBehaviour
 {
+    [Header("Bullet Settings")]
     public int damage = 1;
     public float speed = 60f;
     public float lifetime = 5f;
 
     Rigidbody rb;
-    bool hasHit;
+    bool hasHit = false;
 
     void Awake()
     {
         rb = GetComponent<Rigidbody>();
-        hasHit = false;
     }
 
     void Start()
@@ -23,12 +23,12 @@ public class Bullet : MonoBehaviour
         Destroy(gameObject, lifetime);
     }
 
-    void OnCollisionEnter(Collision collision)
+    void OnTriggerEnter(Collider other)
     {
         if (hasHit) return;
         hasHit = true;
 
-        var zh = collision.collider.GetComponent<ZombieHealth>();
+        var zh = other.GetComponent<ZombieHealth>();
         if (zh != null)
         {
             zh.TakeDamage(damage);

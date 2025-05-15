@@ -3,11 +3,10 @@
 public class ZombieAttack : MonoBehaviour
 {
     [Header("Attack Settings")]
-    public int damageAmount = 1;      // كم يخصم من الصحة
-    public float attackCooldown = 1f; // ثواني بين كل ضربة
+    public int damageAmount = 1;
+    public float attackRate = 1f;    // ثانية بين كل ضربة
     private float nextAttackTime = 0f;
 
-    // هذا يُستدعى كل فريم طالما اللاعب داخل التريغر
     void OnTriggerStay(Collider other)
     {
         if (other.CompareTag("Player") && Time.time >= nextAttackTime)
@@ -16,7 +15,8 @@ public class ZombieAttack : MonoBehaviour
             if (ph != null)
             {
                 ph.TakeDamage(damageAmount);
-                nextAttackTime = Time.time + attackCooldown;
+                Debug.Log("Player hit by zombie! Current Health = " + ph.GetCurrentHealth());
+                nextAttackTime = Time.time + attackRate;
             }
         }
     }
