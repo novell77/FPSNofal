@@ -2439,7 +2439,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   damageAmount: 30
-  attackCooldown: 1
+  attackRate: 1
 --- !u!54 &323545458
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -3277,7 +3277,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   damageAmount: 30
-  attackCooldown: 1
+  attackRate: 1
 --- !u!114 &375442370
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -5937,10 +5937,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6044c2844bc1f1c4baf9fb3a3c4654c1, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  zombiePrefab: {fileID: 716021848}
-  spawnPoints: []
+  zombiePrefab: {fileID: 375442365}
+  spawnPoints:
+  - {fileID: 716021850}
   respawnDelay: 2
-  killLimit: 10
+  killLimit: 2
   finalDoor: {fileID: 494564365}
   doorOpenOffset: {x: 0, y: 3, z: 0}
   doorOpenSpeed: 2
@@ -6843,14 +6844,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 24fe4e835f03eb44aa91044a7a2977b1, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  player: {fileID: 792448291}
-  playerCamera: {fileID: 792448291}
-  playerModel: {fileID: 0}
-  escapeCamera: {fileID: 0}
-  helicopterAnimator: {fileID: 783140470}
-  animationName: GoUp
-  endUI: {fileID: 27764193}
-  delayBeforeEnd: 5
+  finalDoor: {fileID: 494564365}
+  openOffset: {x: 0, y: 3, z: 0}
+  openSpeed: 2
+  requiredKills: 2
 --- !u!95 &783140470
 Animator:
   serializedVersion: 7
@@ -7396,7 +7393,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 431, y: -203.2}
+  m_AnchoredPosition: {x: 431, y: -281}
   m_SizeDelta: {x: 200, y: 50}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &805639546
@@ -10961,8 +10958,8 @@ MonoBehaviour:
   spawnPoints:
   - {fileID: 1439848596}
   respawnDelay: 2
-  killLimit: 10
-  finalDoor: {fileID: 494564365}
+  killLimit: 2
+  finalDoor: {fileID: 1508661622}
   doorOpenOffset: {x: 0, y: 3, z: 0}
   doorOpenSpeed: 2
 --- !u!4 &1439848596
@@ -13759,7 +13756,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!114 &1733343598
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -13819,7 +13816,7 @@ Camera:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1733343597}
-  m_Enabled: 1
+  m_Enabled: 0
   serializedVersion: 2
   m_ClearFlags: 1
   m_BackGroundColor: {r: 0.19215687, g: 0.3019608, b: 0.4745098, a: 0}
@@ -14630,7 +14627,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: -300, y: -328.252}
+  m_AnchoredPosition: {x: -286.8, y: -294.4}
   m_SizeDelta: {x: 200, y: 50}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1811425209
@@ -14645,12 +14642,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 395ed5dd4c075b04ebe9b4b3df9d799b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  killCount: 0
-  winKillCount: 10
   killText: {fileID: 1811425210}
   finalDoor: {fileID: 494564365}
   openOffset: {x: 0, y: 0, z: 10}
   openSpeed: 2
+  winKillCount: 2
+  killCount: 0
 --- !u!114 &1811425210
 MonoBehaviour:
   m_ObjectHideFlags: 0

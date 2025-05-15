@@ -5,23 +5,35 @@ public class KillCounter : MonoBehaviour
 {
     public static KillCounter instance;
 
-    public int killCount = 0;
-    public int winKillCount = 100;
+    [Header("UI")]
+    [Tooltip("Text element to display kills")]
     public TextMeshProUGUI killText;
 
+    [Header("Win & Door")]
+    [Tooltip("Door to open on win")]
     public Transform finalDoor;
-    public Vector3 openOffset = new Vector3(0, 3f, 0); // مثال: الباب يرتفع للأعلى
+    [Tooltip("How much to lift the door")]
+    public Vector3 openOffset = new Vector3(0, 3f, 0);
+    [Tooltip("Speed of door opening")]
     public float openSpeed = 2f;
 
+    [Header("Win Target")]
+    [Tooltip("Kills needed to win")]
+    public int winKillCount = 2;
+
+    [HideInInspector] public int killCount = 0;
+
     private bool hasWon = false;
-    private Vector3 finalDoorClosedPos;
-    private Vector3 finalDoorOpenPos;
+    private Vector3 doorClosedPos;
+    private Vector3 doorOpenPos;
 
     void Awake()
     {
-        instance = this;
-        finalDoorClosedPos = finalDoor.localPosition;
-        finalDoorOpenPos = finalDoorClosedPos + openOffset;
+        if (instance == null) instance = this;
+        else { Destroy(gameObject); return; }
+
+        doorClosedPos = finalDoor.localPosition;
+        doorOpenPos = doorClosedPos + openOffset;
         UpdateUI();
     }
 
@@ -29,7 +41,11 @@ public class KillCounter : MonoBehaviour
     {
         if (hasWon && finalDoor != null)
         {
-            finalDoor.localPosition = Vector3.Lerp(finalDoor.localPosition, finalDoorOpenPos, Time.deltaTime * openSpeed);
+            finalDoor.localPosition = Vector3.Lerp(
+                finalDoor.localPosition,
+                doorOpenPos,
+                Time.deltaTime * openSpeed
+            );
         }
     }
 
@@ -38,23 +54,16 @@ public class KillCounter : MonoBehaviour
         killCount++;
         UpdateUI();
 
-        if (killCount >= winKillCount && !hasWon)
+        if (!hasWon && killCount >= winKillCount)
         {
-            Win();
+            hasWon = true;
+            Debug.Log($"[KillCounter] Win reached at {killCount} kills");
         }
     }
 
-    void UpdateUI()
+    private void UpdateUI()
     {
         if (killText != null)
-        {
-            killText.text = "Kills: " + killCount.ToString();
-        }
-    }
-
-    void Win()
-    {
-        Debug.Log("You Win!");
-        hasWon = true;
+            killText.text = $"Kills: {killCount}";
     }
 }
