@@ -49,8 +49,19 @@ public class ZombieHealth : MonoBehaviour
     void Die()
     {
         isDead = true;
-        if (ai != null) ai.enabled = false;
-        if (animator != null) animator.Play("Z_Death");
+
+        if (ai != null)
+            ai.enabled = false;
+
+        if (animator != null)
+            animator.Play("Z_Death");
+
+        // Add kill count when this zombie dies
+        if (KillCounter.instance != null)
+            KillCounter.instance.AddKill();
+
+        // Do NOT destroy the game object so the corpse remains in scene
+        // Destroy(gameObject);
     }
 
     void ShowBloodEffect()

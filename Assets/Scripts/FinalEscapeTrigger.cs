@@ -1,45 +1,48 @@
 ﻿using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class FinalEscapeTrigger : MonoBehaviour
 {
-    [Header("Door Settings")]
-    [Tooltip("الباب الذي سيفتح عند تحقيق شرط القتل")]
     public Transform finalDoor;
-    [Tooltip("المقدار الذي سيتحرك به الباب")]
     public Vector3 openOffset = new Vector3(0, 3f, 0);
-    [Tooltip("سرعة فتح الباب")]
     public float openSpeed = 2f;
+    public int requiredKills = 4;
 
-    [Header("Win Kill Requirement")]
-    [Tooltip("عدد الزومبي الذي يجب قتله لفتح الباب")]
-    public int requiredKills = 2;
+    public Animator helicopterAnimator;
+    public string takeoffTrigger = "DoTakeoff";
 
+    public Camera escapeCamera;
+    public float endDelayAfterTouch = 0f;
+
+    public GameObject endGameUI;
+    public AudioClip endTheme;
+
+    private AudioSource audioSource;
+    private bool doorOpening = false;
+    private bool planeTouched = false;
+    private bool gameEnded = false;
     private Vector3 doorClosedPos;
     private Vector3 doorOpenPos;
-    private bool doorOpening = false;
 
-    void Start()
+    void Awake()
     {
-        if (finalDoor != null)
-        {
-            doorClosedPos = finalDoor.localPosition;
-            doorOpenPos = doorClosedPos + openOffset;
-        }
+        doorClosedPos = finalDoor.localPosition;
+        doorOpenPos = doorClosedPos + openOffset;
+        audioSource = gameObject.AddComponent<AudioSource>();
+        audioSource.clip = endTheme;
+        audioSource.playOnAwake = false;
     }
 
     void Update()
     {
-        // تحقق مما إذا وصل اللاعب لعدد القتلات المطلوب
         if (!doorOpening
             && KillCounter.instance != null
             && KillCounter.instance.killCount >= requiredKills)
         {
             doorOpening = true;
-            Debug.Log($"Reached {KillCounter.instance.killCount} kills → opening door");
         }
 
-        // حرّك الباب تدريجياً نحو الحالة المفتوحة
-        if (doorOpening && finalDoor != null)
+        if (doorOpening)
         {
             finalDoor.localPosition = Vector3.Lerp(
                 finalDoor.localPosition,
@@ -47,5 +50,33 @@ public class FinalEscapeTrigger : MonoBehaviour
                 Time.deltaTime * openSpeed
             );
         }
+
+        if (gameEnded && Input.GetKeyDown(KeyCode.R))
+        {
+            if (audioSource.isPlaying) audioSource.Stop();
+            Time.timeScale = 1f;
+            SceneManager.LoadScene(SceneManager.GetActiveScene().name);
+        }
+    }
+
+    void OnTriggerEnter(Collider other)
+    {
+        if (!doorOpening || planeTouched) return;
+
+        if (other.CompareTag("Player"))
+        {
+            planeTouched = true;
+            escapeCamera.enabled = true;
+            helicopterAnimator.SetTrigger(takeoffTrigger);
+            Invoke(nameof(TriggerEndGame), endDelayAfterTouch);
+        }
+    }
+
+    void TriggerEndGame()
+    {
+        Time.timeScale = 0f;
+        if (endTheme != null) audioSource.Play();
+        endGameUI.SetActive(true);
+        gameEnded = true;
     }
 }
