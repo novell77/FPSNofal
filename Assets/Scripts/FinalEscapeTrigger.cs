@@ -3,80 +3,64 @@ using UnityEngine.SceneManagement;
 
 public class FinalEscapeTrigger : MonoBehaviour
 {
-    public Transform finalDoor;
-    public Vector3 openOffset = new Vector3(0, 3f, 0);
-    public float openSpeed = 2f;
-    public int requiredKills = 4;
-
+    [Header("References")]
     public Animator helicopterAnimator;
-    public string takeoffTrigger = "DoTakeoff";
-
     public Camera escapeCamera;
-    public float endDelayAfterTouch = 0f;
+    public GameObject playerModel;
+    public GameObject endUI;
+    public AudioSource audioSource;
+    public AudioClip endClip;
 
-    public GameObject endGameUI;
-    public AudioClip endTheme;
+    [Header("Settings")]
+    public float delayBeforeEnd = 5f;
+    public string animationTrigger = "StartFly";
 
-    private AudioSource audioSource;
-    private bool doorOpening = false;
-    private bool planeTouched = false;
-    private bool gameEnded = false;
-    private Vector3 doorClosedPos;
-    private Vector3 doorOpenPos;
+    private bool triggered = false;
 
-    void Awake()
+    void OnTriggerEnter(Collider other)
     {
-        doorClosedPos = finalDoor.localPosition;
-        doorOpenPos = doorClosedPos + openOffset;
-        audioSource = gameObject.AddComponent<AudioSource>();
-        audioSource.clip = endTheme;
-        audioSource.playOnAwake = false;
+        if (triggered) return;
+
+        if (other.CompareTag("Player"))
+        {
+            triggered = true;
+
+            // Disable player model
+            if (playerModel != null)
+                playerModel.SetActive(false);
+
+            // Enable escape camera
+            if (escapeCamera != null)
+                escapeCamera.gameObject.SetActive(true);
+
+            // Play helicopter animation
+            if (helicopterAnimator != null)
+                helicopterAnimator.SetTrigger(animationTrigger);
+
+            // Play end sound
+            if (endClip != null && audioSource != null)
+                audioSource.PlayOneShot(endClip);
+
+            // Show end UI after delay
+            Invoke(nameof(ShowEndUI), delayBeforeEnd);
+        }
+    }
+
+    void ShowEndUI()
+    {
+        if (endUI != null)
+        {
+            endUI.SetActive(true);
+            Time.timeScale = 0f; // Freeze the game
+        }
     }
 
     void Update()
     {
-        if (!doorOpening
-            && KillCounter.instance != null
-            && KillCounter.instance.killCount >= requiredKills)
+        if (Time.timeScale == 0f && Input.GetKeyDown(KeyCode.R))
         {
-            doorOpening = true;
-        }
-
-        if (doorOpening)
-        {
-            finalDoor.localPosition = Vector3.Lerp(
-                finalDoor.localPosition,
-                doorOpenPos,
-                Time.deltaTime * openSpeed
-            );
-        }
-
-        if (gameEnded && Input.GetKeyDown(KeyCode.R))
-        {
-            if (audioSource.isPlaying) audioSource.Stop();
             Time.timeScale = 1f;
             SceneManager.LoadScene(SceneManager.GetActiveScene().name);
         }
-    }
-
-    void OnTriggerEnter(Collider other)
-    {
-        if (!doorOpening || planeTouched) return;
-
-        if (other.CompareTag("Player"))
-        {
-            planeTouched = true;
-            escapeCamera.enabled = true;
-            helicopterAnimator.SetTrigger(takeoffTrigger);
-            Invoke(nameof(TriggerEndGame), endDelayAfterTouch);
-        }
-    }
-
-    void TriggerEndGame()
-    {
-        Time.timeScale = 0f;
-        if (endTheme != null) audioSource.Play();
-        endGameUI.SetActive(true);
-        gameEnded = true;
     }
 }
